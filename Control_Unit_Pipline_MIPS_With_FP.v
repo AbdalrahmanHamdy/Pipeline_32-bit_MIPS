@@ -47,12 +47,12 @@ always @(*) begin
             	     FpuRegD = 1'b1;
              // FPU Operation
        		case (funct)
-      			 6'b100000 : begin
+      			 6'b000000: begin
 					// add.s
 					FpuConD = 1'b0;
               
 		    		     end
-       			6'b100001 : begin
+       			6'b000001 : begin
 					// sub.s
 					FpuConD = 1'b1;
 		                    end
