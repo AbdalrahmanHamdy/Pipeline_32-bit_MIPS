@@ -161,12 +161,12 @@ check_control_outputs(1'b0, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 3'b110, 1'b0, 1'b0, "B
 // Verification: Ensures FPU control flags are precise and safety defaults work
 //====================================================
 
-// Test 4.1: Floating Point ADD (add.s) (op = 010001, funct = 100000)
-op=6'b010001; funct=6'b100000; #10;
+// Test 4.1: Floating Point ADD (add.s) (op = 010001, funct = 000000)
+op=6'b010001; funct= 6'b000000; #10;
 check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b1, 1'b0, "Floating Point ADD (add.s)");
 
-// Test 4.2: Floating Point SUB (sub.s) (op = 010001, funct = 100001)
-op=6'b010001; funct=6'b100001; #10;
+// Test 4.2: Floating Point SUB (sub.s) (op = 010001, funct =000001)
+op=6'b010001; funct=6'b000001; #10;
 check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b1, 1'b1, "Floating Point SUB (sub.s)");
 
 // Test 4.3: Unsupported FP Function #1 (funct = 000010)
@@ -179,7 +179,7 @@ check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b0, 1'b0, "U
 // Test 4.5: Verify ALUControl remains at default ADD during FP instructions
 // The integer ALU is not used by the FPU, but alu_op = 00 should force ALUControlD = 010.
 op = 6'b010001;
-funct = 6'b100001;
+funct = 6'b000000;
 #10;
 
 if (ALUControlD === 3'b010)
@@ -200,28 +200,33 @@ check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b0, 1'b0, "I
 op=6'b000011; funct=6'b101010; #10;
 check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b0, 1'b0, "Illegal Opcode (000011)");
 
-
 //====================================================
 // SECTION 6: State Transition Tests (Latch & Sticky-Bits Detection)
 // Verification: Ensure state doesn't leak across different instruction boundaries
 //====================================================
 
 // Test 6.1: Floating Point -> Integer Transition
-op=6'b010001; funct=6'b100000; #10; // FP ADD
-op=6'b100011; funct=6'b000000; #10; // LW
+// Step 1: Set FP ADD to assert FpuRegD
+op=6'b010001; funct=6'b000000; #10; 
+// Step 2: Transition to LW and check if FpuRegD/FpuConD correctly clear to 0
+op=6'b100011; funct=6'b000000; #10; 
 check_control_outputs(1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b1, 3'b010, 1'b0, 1'b0, "Floating -> Integer Transition (LW)");
 
+
 // Test 6.2: Integer -> Floating Point Transition
-op=6'b100011; funct=6'b000000; #10; // LW
-op=6'b010001; funct=6'b100001; #10; // FP SUB
+// Step 1: Set LW to assert MemtoRegD and ALUSrcD
+op=6'b100011; funct=6'b000000; #10; 
+// Step 2: Transition to FP SUB and check if integer control signals clear
+op=6'b010001; funct=6'b000001; #10; 
 check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b1, 1'b1, "Integer -> Floating Transition (FP SUB)");
 
+
 // Test 6.3: R-Type -> Floating Point Transition
-op=6'b000000; funct=6'b100010; #10; // SUB
-op=6'b010001; funct=6'b100000; #10; // FP ADD
+// Step 1: Set R-Type SUB
+op=6'b000000; funct=6'b100010; #10; 
+// Step 2: Transition to FP ADD and check RegWriteD resets while FpuRegD sets
+op=6'b010001; funct=6'b000000; #10; 
 check_control_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 3'b010, 1'b1, 1'b0, "R-Type SUB -> FP ADD Transition");
-
-
 //====================================================
 // End Simulation
 //====================================================
