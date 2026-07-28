@@ -1,12 +1,17 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
+
 module alu_tb;
-    reg  [31:0] SrcA;
-    reg  [31:0] SrcB;
-    reg  [3:0]  ALUControl;
+
+    // Inputs
+    reg [31:0] SrcA;
+    reg [31:0] SrcB;
+    reg [3:0]  ALUControl;
+
+    // Outputs
     wire [31:0] ALUResult;
     wire        Zero;
 
-    // Instantiation
+    // Instantiate the Unit Under Test (UUT)
     alu uut (
         .SrcA(SrcA),
         .SrcB(SrcB),
@@ -16,15 +21,25 @@ module alu_tb;
     );
 
     initial begin
+     
+
+        // Initialize Inputs
         SrcA = 0; SrcB = 0; ALUControl = 0;
         #10;
-        // أضف حالات الاختبار هنا
-        #10 SrcA = 32'h0A10; SrcB = 32'h01A0; ALUControl = 4'b0000;
-        #10 SrcA = 32'h0A10; SrcB = 32'h01A0; ALUControl = 4'b0001;
-        #10 SrcA = 32'h0A10; SrcB = 32'h01A0; ALUControl = 4'b0010;
-        #10 SrcA = 32'h0A10; SrcB = 32'h01A0; ALUControl = 4'b0110;
-        #10 SrcA = 32'h0A10; SrcB = 32'h01A0; ALUControl = 4'b0111;
-        #10 SrcA = 32'h0A10; SrcB = 32'h01A0; ALUControl = 4'b1100;  
+
+        // Test Cases
+        #10 SrcA = 32'h00000010; SrcB = 32'h000000A0; ALUControl = 4'b0000; // AND
+        #10 SrcA = 32'h00000010; SrcB = 32'h000000A0; ALUControl = 4'b0001; // OR
+        #10 SrcA = 32'h00000010; SrcB = 32'h000000A0; ALUControl = 4'b0010; // ADD
+        #10 SrcA = 32'h00000010; SrcB = 32'h000000A0; ALUControl = 4'b0110; // SUB
+        #10 SrcA = 32'h00000010; SrcB = 32'h000000A0; ALUControl = 4'b0111; // SLT
+        #10 SrcA = 32'h00000010; SrcB = 32'h000000A0; ALUControl = 4'b1100; // NOR
+        #10;
+        // Monitor outputs in simulation
+        $monitor("Time=%0t | SrcA=0x%h | SrcB=0x%h | ALUControl=%b | ALUResult=0x%h | Zero=%b", 
+                 $time, SrcA, SrcB, ALUControl, ALUResult, Zero);
+
         $finish;
     end
+
 endmodule
